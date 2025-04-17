@@ -30,7 +30,7 @@ input[type="range"] {
 }
 
 button {
-    background-color: #f44336;
+    background-color: #4CAF50;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -40,7 +40,7 @@ button {
 }
 
 button:hover {
-    background-color: #d32f2f;
+    background-color: #45a049;
 }
 
 #countdown {

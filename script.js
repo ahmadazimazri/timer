@@ -36,9 +36,9 @@ startTimerButton.addEventListener("click", () => {
             countdownDisplay.textContent = `Remaining Time: ${secondsRemaining} seconds`;
         } else {
             clearInterval(countdownInterval);
-            countdownDisplay.textContent = "Time's up! Redirecting...";
+            countdownDisplay.textContent = "Time's up Mr Hunt.";
             // Redirect to the surprise YouTube link
-            window.location.href = "https://www.youtube.com/watch?v=c5xA8zU_jQ4";
+            window.location.href = "https://youtu.be/c5xA8zU_jQ4?t=33";
         }
     }, 1000);
 });

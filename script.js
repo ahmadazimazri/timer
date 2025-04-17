@@ -13,6 +13,7 @@ timeSlider.addEventListener("input", () => {
     const minutes = (seconds / 60).toFixed(2);
     secondsDisplay.textContent = seconds;
     minutesDisplay.textContent = minutes;
+    countdownDisplay.style.display = "none"; // Hide countdown when adjusting slider
 });
 
 // Start the timer
@@ -21,6 +22,7 @@ startTimerButton.addEventListener("click", () => {
 
     // Display countdown message
     countdownDisplay.style.display = "block";
+    countdownDisplay.textContent = `Remaining Time: ${secondsRemaining} seconds`;
 
     // Clear any existing interval
     if (countdownInterval) {
@@ -31,11 +33,11 @@ startTimerButton.addEventListener("click", () => {
     countdownInterval = setInterval(() => {
         if (secondsRemaining > 0) {
             secondsRemaining--;
-            countdownDisplay.textContent = `Time Remaining: ${secondsRemaining} seconds`;
+            countdownDisplay.textContent = `Remaining Time: ${secondsRemaining} seconds`;
         } else {
             clearInterval(countdownInterval);
             countdownDisplay.textContent = "Time's up! Redirecting...";
-            // Redirect to the Mission Impossible theme song
+            // Redirect to the surprise YouTube link
             window.location.href = "https://www.youtube.com/watch?v=c5xA8zU_jQ4";
         }
     }, 1000);

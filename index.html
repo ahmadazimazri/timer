@@ -4,19 +4,319 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timer Page</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- Base CSS --- */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #0c0c0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        /* --- Input Group --- */
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .input-group label {
+            font-size: 18px;
+            color: #555;
+            margin: 0;
+            padding: 0;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* --- Buttons --- */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        button {
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:disabled {
+             background-color: #cccccc !important;
+             cursor: not-allowed !important;
+        }
+        #startTimer { background-color: #d9534f; }
+        #startTimer:hover:not(:disabled) { background-color: #c9302c; }
+        #stopTimer { background-color: #5bc0de; display: none; }
+        #stopTimer:hover:not(:disabled) { background-color: #31b0d5; }
+
+        /* --- Countdown Text --- */
+        #countdown-text {
+            font-size: 20px;
+            color: #333;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 1.5em;
+        }
+
+        /* --- Fuse Elements --- */
+
+        /* NEW: Wrapper for bomb and fuse track */
+        .fuse-wrapper {
+            display: flex;
+            align-items: center; /* Vertically align bomb and fuse track */
+            justify-content: center; /* Center the group */
+            gap: 8px; /* Space between bomb and fuse track */
+            margin-top: 20px;
+            display: none; /* Hidden initially */
+            padding: 0 20px; /* Add padding so bomb isn't cut off */
+            box-sizing: border-box;
+        }
+
+        /* Bomb icon styling - Positioned by flexbox now */
+        .bomb-icon {
+            font-size: 50px; /* <<< MADE BIGGER */
+            line-height: 1;
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            /* Removed absolute positioning */
+            flex-shrink: 0; /* Prevent bomb from shrinking */
+        }
+
+        /* Fuse container styling (the grey track) */
+        .fuse-container {
+            /* width: 100%; Removed, flex-grow handles width */
+            flex-grow: 1; /* Allow fuse track to take remaining space */
+            height: 25px;
+            background-color: #ddd;
+            border-radius: 15px;
+            /* margin-top: 20px; Removed, handled by wrapper */
+            position: relative; /* Still needed for fuse-bar */
+            overflow: hidden;
+            /* display: none; Removed, handled by wrapper */
+        }
+
+        /* Inner "burning" fuse bar styling */
+        .fuse-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(to right, #ff4500, #ff8c00, #ffdab9);
+            border-radius: 0 15px 15px 0;
+            width: 100%;
+            transition: width 0.5s linear;
+        }
+
+        /* Styling for the time display spans */
+        #seconds-display, #minutes-display {
+            font-weight: bold;
+            color: #0056b3;
+        }
+        .time-display-label {
+            font-size: 16px;
+             margin-top: 5px;
+        }
+
+    </style>
 </head>
 <body>
+    <audio id="end-sound-player">
+        Your browser does not support the audio element.
+    </audio>
+
     <div class="container">
         <h1>Countdown Timer</h1>
-        <p>Set the timer in seconds using the slider below:</p>
-        <input type="range" id="timeSlider" min="1" max="1800" step="1" value="60">
-        <p>Seconds: <span id="seconds">60</span></p>
-        <p>Minutes: <span id="minutes">1</span></p>
-        <button id="startTimer">Start Timer</button>
-        <p id="countdown" style="font-size: 24px; color: red; display: none;">Remaining Time: 60 seconds</p>
+
+        <div class="input-group">
+            <label for="timeInput">Set the fuse length (seconds):</label>
+            <input type="number" id="timeInput" min="1" max="3600" step="1" value="300">
+        </div>
+        <p class="time-display-label">
+            (<span id="seconds-display">300</span> seconds is <span id="minutes-display">5.00</span> minutes)
+        </p>
+
+        <div class="button-container">
+            <button id="startTimer">Start timer, should you choose to accept</button>
+            <button id="stopTimer">Stop timer</button>
+        </div>
+
+        <p id="countdown-text" style="display: none;">Remaining Time: 300 seconds</p>
+
+        <div class="fuse-wrapper" id="fuseWrapper">
+            <div class="bomb-icon">💣</div>
+            <div class="fuse-container" id="fuseContainer">
+                 <div class="fuse-bar" id="fuseBar"></div>
+            </div>
+        </div>
+
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Get references to DOM elements
+        const timeInput = document.getElementById("timeInput");
+        const secondsDisplay = document.getElementById("seconds-display");
+        const minutesDisplay = document.getElementById("minutes-display");
+        const startTimerButton = document.getElementById("startTimer");
+        const stopTimerButton = document.getElementById("stopTimer");
+        const countdownTextDisplay = document.getElementById("countdown-text");
+        const fuseWrapper = document.getElementById("fuseWrapper"); // NEW: Wrapper reference
+        const fuseContainer = document.getElementById("fuseContainer"); // Keep this reference
+        const fuseBar = document.getElementById("fuseBar");
+        const endSoundPlayer = document.getElementById("end-sound-player");
+
+        let countdownInterval;
+        let totalSeconds = 0;
+
+        /**
+         * Resets the timer state (clears interval, resets UI elements).
+         */
+        function resetTimerState() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            countdownTextDisplay.style.display = "none";
+            fuseWrapper.style.display = "none"; // Hide the whole wrapper
+            fuseBar.style.width = '100%';
+            startTimerButton.style.display = 'inline-block';
+            stopTimerButton.style.display = 'none';
+            timeInput.disabled = false;
+        }
+
+        /**
+         * Updates the seconds and minutes display based on the input field.
+         */
+        function updateTimeDisplayFromInput() {
+            let seconds = parseInt(timeInput.value, 10);
+            if (isNaN(seconds) || seconds < 1) {
+                seconds = 1;
+                timeInput.value = seconds;
+            }
+            const minutes = (seconds / 60).toFixed(2);
+            secondsDisplay.textContent = seconds;
+            minutesDisplay.textContent = minutes;
+            resetTimerState();
+        }
+
+        timeInput.addEventListener("input", updateTimeDisplayFromInput);
+
+        // Start the timer when button is clicked
+        startTimerButton.addEventListener("click", () => {
+            totalSeconds = parseInt(timeInput.value, 10);
+             if (isNaN(totalSeconds) || totalSeconds < 1) {
+                alert("Please enter a valid number of seconds (1 or more).");
+                return;
+            }
+
+            let secondsRemaining = totalSeconds;
+
+            startTimerButton.style.display = 'none';
+            stopTimerButton.style.display = 'inline-block';
+            timeInput.disabled = true;
+            countdownTextDisplay.style.display = "block";
+            fuseWrapper.style.display = "flex"; // Show the wrapper (using flex)
+            fuseBar.style.width = '100%';
+            updateTimerDisplay(secondsRemaining);
+
+            if (countdownInterval) { clearInterval(countdownInterval); }
+
+            countdownInterval = setInterval(() => {
+                if (secondsRemaining > 0) {
+                    secondsRemaining--;
+                    updateTimerDisplay(secondsRemaining);
+                } else {
+                    // --- Timer Finished ---
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    countdownTextDisplay.textContent = "💥 Time's up Mr Hunt. 💥";
+                    fuseBar.style.width = '0%';
+                    stopTimerButton.style.display = 'none';
+
+                    // --- Play End Sound ---
+                    const soundFilePath = './audio.mp3';
+                    endSoundPlayer.src = soundFilePath;
+                    endSoundPlayer.play().catch(error => {
+                        console.error(`Failed to play end sound: ${soundFilePath}`, error);
+                    });
+                    // --- End Play Sound ---
+
+                    // Re-enable controls after a delay
+                    setTimeout(() => {
+                         startTimerButton.style.display = 'inline-block';
+                         timeInput.disabled = false;
+                    }, 1500);
+                }
+            }, 1000);
+        });
+
+        // Stop the timer when stop button is clicked
+        stopTimerButton.addEventListener("click", () => {
+            resetTimerState();
+            countdownTextDisplay.textContent = "Timer stopped.";
+            countdownTextDisplay.style.display = "block";
+        });
+
+
+        /**
+         * Updates both the text countdown and the fuse bar width.
+         */
+        function updateTimerDisplay(secondsLeft) {
+            countdownTextDisplay.textContent = `Remaining Time: ${secondsLeft} seconds`;
+            const percentageRemaining = totalSeconds > 0 ? (secondsLeft / totalSeconds) * 100 : 0;
+            fuseBar.style.width = `${percentageRemaining}%`;
+        }
+
+        // Initialize display on page load
+        updateTimeDisplayFromInput();
+
+    </script>
 </body>
 </html>
